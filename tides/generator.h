@@ -152,20 +152,21 @@ class Generator {
     return render_block_ != playback_block_;
   }
   
-  inline void Process() {
+  inline void Process(bool wavetableHack = false) {
     while (render_block_ != playback_block_) {
       uint8_t* in = input_samples_[render_block_];
       GeneratorSample* out = output_samples_[render_block_];
-  #ifndef WAVETABLE_HACK
-      if (range_ == GENERATOR_RANGE_HIGH) {
-        ProcessAudioRate(in, out, kBlockSize);
-      } else {
-        ProcessControlRate(in, out, kBlockSize);
+      if (!wavetableHack) {
+        if (range_ == GENERATOR_RANGE_HIGH) {
+          ProcessAudioRate(in, out, kBlockSize);
+        } else {
+          ProcessControlRate(in, out, kBlockSize);
+        }
+        ProcessFilterWavefolder(out, kBlockSize);
       }
-      ProcessFilterWavefolder(out, kBlockSize);
-  #else
-      ProcessWavetable(in, out, kBlockSize);
-  #endif
+      else {
+        ProcessWavetable(in, out, kBlockSize);
+      }
       render_block_ = (render_block_ + 1) % kNumBlocks;
     }
   }
