@@ -65,7 +65,7 @@ class SignatureWaveshaper {
       x = stmlib::Mix(x, x_skew, skew << 11);
       
       int16_t sigmoid = x * (8192 + (sigmoid_strength << 10)) / \
-          (8192 + (sigmoid_strength * abs((int32_t) x) >> 5));
+          (8192 + (sigmoid_strength * std::abs((int32_t) x) >> 5));
       int16_t bumplets = wav_sine[(i * bumplets_frequency) & 255];
       uint16_t bumplet_gain = x * x / (bumplets_width) + 16;
       bumplet_gain = 32768 * 128 / (128 + bumplet_gain);

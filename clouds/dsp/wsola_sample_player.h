@@ -238,7 +238,7 @@ class WSOLASamplePlayer {
     
     float size_factor = SemitonesToRatio((size_factor_ - 1.0f) * 60.0f);
     int32_t new_window_size = static_cast<int32_t>(size_factor * kMaxWSOLASize);
-    if (abs(new_window_size - window_size_) > 64) {
+    if (std::abs(new_window_size - window_size_) > 64) {
       int32_t error = (new_window_size - window_size_) >> 5;
       new_window_size = window_size_ + error;
       window_size_ = new_window_size - (new_window_size % 4);
