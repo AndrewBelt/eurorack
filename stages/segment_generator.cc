@@ -47,6 +47,7 @@ using namespace segment;
 // Duration of the "tooth" in the output when a trigger is received while the
 // output is high.
 const int kRetrigDelaySamples = 32;
+float kSampleRate = 31250.0f;
 
 void SegmentGenerator::Init() {
   process_fn_ = &SegmentGenerator::ProcessMultiSegment;
@@ -82,14 +83,18 @@ void SegmentGenerator::Init() {
   p.primary = 0.0f;
   p.secondary = 0.0f;
   fill(&parameters_[0], &parameters_[kMaxNumSegments], p);
-  
-  ramp_extractor_.Init(
-      kSampleRate,
-      1000.0f / kSampleRate);
+
+  InitRamps();  
   ramp_division_quantizer_.Init();
   delay_line_.Init();
   
   num_segments_ = 0;
+}
+
+void SegmentGenerator::InitRamps() {
+  ramp_extractor_.Init(
+      kSampleRate,
+      1000.0f / kSampleRate);
 }
 
 inline float SegmentGenerator::WarpPhase(float t, float curve) const {
@@ -109,7 +114,7 @@ inline float SegmentGenerator::WarpPhase(float t, float curve) const {
 inline float SegmentGenerator::RateToFrequency(float rate) const {
   int32_t i = static_cast<int32_t>(rate * 2048.0f);
   CONSTRAIN(i, 0, LUT_ENV_FREQUENCY_SIZE);
-  return lut_env_frequency[i];
+  return lut_env_frequency[i] * (31250.0f/kSampleRate);
 }
 
 inline float SegmentGenerator::PortamentoRateToLPCoefficient(float rate) const {
