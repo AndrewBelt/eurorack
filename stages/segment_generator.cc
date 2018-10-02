@@ -119,7 +119,7 @@ inline float SegmentGenerator::RateToFrequency(float rate) const {
 
 inline float SegmentGenerator::PortamentoRateToLPCoefficient(float rate) const {
   int32_t i = static_cast<int32_t>(rate * 512.0f);
-  return lut_portamento_coefficient[i];
+  return lut_portamento_coefficient[i] * (31250.0f/kSampleRate);
 }
 
 void SegmentGenerator::ProcessMultiSegment(
