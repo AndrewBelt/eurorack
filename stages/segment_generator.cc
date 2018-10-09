@@ -47,7 +47,6 @@ using namespace segment;
 // Duration of the "tooth" in the output when a trigger is received while the
 // output is high.
 const int kRetrigDelaySamples = 32;
-float kSampleRate = 31250.0f;
 
 void SegmentGenerator::Init() {
   process_fn_ = &SegmentGenerator::ProcessMultiSegment;
@@ -84,17 +83,18 @@ void SegmentGenerator::Init() {
   p.secondary = 0.0f;
   fill(&parameters_[0], &parameters_[kMaxNumSegments], p);
 
-  InitRamps();  
   ramp_division_quantizer_.Init();
   delay_line_.Init();
   
   num_segments_ = 0;
 }
 
-void SegmentGenerator::InitRamps() {
+void SegmentGenerator::SetSampleRate(float sample_rate) {
+  sample_rate_ = sample_rate;
+
   ramp_extractor_.Init(
-      kSampleRate,
-      1000.0f / kSampleRate);
+      sample_rate_,
+      1000.0f / sample_rate_);
 }
 
 inline float SegmentGenerator::WarpPhase(float t, float curve) const {
@@ -114,12 +114,12 @@ inline float SegmentGenerator::WarpPhase(float t, float curve) const {
 inline float SegmentGenerator::RateToFrequency(float rate) const {
   int32_t i = static_cast<int32_t>(rate * 2048.0f);
   CONSTRAIN(i, 0, LUT_ENV_FREQUENCY_SIZE);
-  return lut_env_frequency[i] * (31250.0f/kSampleRate);
+  return lut_env_frequency[i] * (31250.0f/sample_rate_);
 }
 
 inline float SegmentGenerator::PortamentoRateToLPCoefficient(float rate) const {
   int32_t i = static_cast<int32_t>(rate * 512.0f);
-  return lut_portamento_coefficient[i] * (31250.0f/kSampleRate);
+  return lut_portamento_coefficient[i] * (31250.0f/sample_rate_);
 }
 
 void SegmentGenerator::ProcessMultiSegment(
@@ -317,7 +317,7 @@ void SegmentGenerator::ProcessFreeRunningLFO(
     const GateFlags* gate_flags, SegmentGenerator::Output* out, size_t size) {
   float f = 96.0f * (parameters_[0].primary - 0.5f);
   CONSTRAIN(f, -128.0f, 127.0f);
-  const float frequency = SemitonesToRatio(f) * 2.0439497f / kSampleRate;
+  const float frequency = SemitonesToRatio(f) * 2.0439497f / sample_rate_;
 
   active_segment_ = 0;
   for (size_t i = 0; i < size; ++i) {
@@ -336,7 +336,7 @@ void SegmentGenerator::ProcessDelay(
   const float max_delay = static_cast<float>(kMaxDelay - 1);
   
   float delay_time = SemitonesToRatio(
-      2.0f * (parameters_[0].secondary - 0.5f) * 36.0f) * 0.5f * kSampleRate;
+      2.0f * (parameters_[0].secondary - 0.5f) * 36.0f) * 0.5f * sample_rate_;
   float clock_frequency = 1.0f;
   float delay_frequency = 1.0f / delay_time;
   

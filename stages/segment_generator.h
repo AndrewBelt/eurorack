@@ -38,8 +38,6 @@
 
 namespace stages {
 
-extern float kSampleRate;
-
 // Each segment generator can handle up to 36 segments. That's a bit of a waste
 // of RAM because the 6 generators running on a module will never have to deal
 // with 36 segments each. But it was a bit too much to have a shared pool of
@@ -104,8 +102,8 @@ class SegmentGenerator {
   };
   
   void Init();
-  void InitRamps();
-  
+  void SetSampleRate(float sample_rate);
+
   typedef void (SegmentGenerator::*ProcessFn)(
       const stmlib::GateFlags* gate_flags, Output* out, size_t size);
   
@@ -167,6 +165,8 @@ class SegmentGenerator {
   float RateToFrequency(float rate) const;
   float PortamentoRateToLPCoefficient(float rate) const;
   
+  float sample_rate_;
+
   float phase_;
   float aux_;
   float previous_delay_sample_;
